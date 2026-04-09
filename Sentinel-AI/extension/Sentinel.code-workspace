@@ -1,0 +1,44 @@
+{
+	"folders": [
+		{
+			"name": "Sentinel",
+			"path": ".."
+		},
+		{
+			"name": "cc",
+			"path": "../../cc"
+		},
+		{
+			"name": ".vscode",
+			"path": "../../Code/.vscode"
+		},
+		{
+			"name": "ds",
+			"path": "../../Code/ds"
+		},
+		{
+			"name": "cpp",
+			"path": "../../Code/cpp"
+		},
+		{
+			"name": "newenv",
+			"path": "../../Code/newenv"
+		},
+		{
+			"name": "project_1",
+			"path": "../../Code/project_1"
+		},
+		{
+			"name": "Python Notes",
+			"path": "../../Code/Python Notes"
+		},
+		{
+			"name": "Shield AI",
+			"path": "../../Shield AI"
+		},
+		{
+			"path": "../../Code/leet code"
+		}
+	],
+	"settings": {}
+}
