@@ -1,36 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        body {
-            width: 300px;
-            font-family: Arial;
-            padding: 10px;
-        }
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+    }
+    body {
+      width: 350px;
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 15px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+    .logo-icon { font-size: 24px; }
+    h2 { margin: 0; font-size: 18px; letter-spacing: 1px; }
+    
+    .container { background: var(--card); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+    
+    button {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    button:hover { background: #2563eb; transform: translateY(-1px); }
+    button:disabled { background: #64748b; cursor: not-allowed; }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            background: black;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            margin-top: 10px;
-        }
-    </style>
+    #result {
+      margin-top: 15px;
+      font-size: 13px;
+      line-height: 1.6;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      color: #cbd5e1;
+    }
+    
+    /* Loading Animation */
+    .loader {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid #fff; border-bottom-color: transparent;
+      border-radius: 50%; animation: rotation 1s linear infinite;
+    }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
+  <div class="header">
+    <span class="logo-icon">🛡️</span>
+    <h2>SENTINEL <span style="color:var(--primary)">AI</span></h2>
+  </div>
 
-<h3>Sentinel AI</h3>
-<button id="scan">Scan Privacy Policy</button>
+  <div class="container">
+    <button id="analyzeBtn">
+      <span class="loader" id="loader"></span>
+      <span id="btnText">Analyze Policy</span>
+    </button>
+    <div id="result">Click the button to scan this page for privacy risks.</div>
+  </div>
 
-<pre id="result">Waiting...</pre>
-
-<script src="popup.js"></script>
-
+  <script src="popup.js"></script>
 </body>
 </html>

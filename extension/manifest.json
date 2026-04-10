@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Summarizes privacy policies using local AI",
   "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://localhost:5000/*"],
   "action": {
     "default_popup": "popup.html"
   }

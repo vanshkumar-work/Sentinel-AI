@@ -1,17 +1,35 @@
-function extractPolicyText() {
-    const elements = document.querySelectorAll("p, li, h1, h2, h3, h4");
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("analyzeBtn");
+  const resultDiv = document.getElementById("result");
 
-    let text = "";
+  btn.addEventListener("click", async () => {
+    resultDiv.innerText = "Analyzing...";
 
-    elements.forEach(el => {
-        text += el.innerText + " ";
-    });
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
-    return text;
-}
+      const injected = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => document.body.innerText.slice(0, 4000),
+      });
 
-chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
-    if (req.action === "GET_TEXT") {
-        sendResponse({ text: extractPolicyText() });
+      const pageText = injected[0].result;
+
+      const response = await fetch("http://localhost:5000/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: pageText }),
+      });
+
+      const data = await response.json();
+
+      resultDiv.innerText = data.result;
+
+    } catch (error) {
+      console.error(error);
+      resultDiv.innerText = "Backend not working";
     }
+  });
 });

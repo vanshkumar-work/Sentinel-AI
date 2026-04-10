@@ -1,64 +1,57 @@
-document.getElementById("scan").addEventListener("click", async () => {
+document.getElementById("analyzeBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("analyzeBtn");
+  const btnText = document.getElementById("btnText");
+  const loader = document.getElementById("loader");
+  const resultDiv = document.getElementById("result");
 
-    const resultBox = document.getElementById("result");
-    resultBox.textContent = "Reading page...";
+  // UI State: Loading
+  btn.disabled = true;
+  loader.style.display = "inline-block";
+  btnText.innerText = "Analyzing...";
+  resultDiv.innerText = "Scanning page content...";
 
-    const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    // Better extraction: only get relevant text tags
+    const injected = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const bodyText = document.body.innerText;
+        return bodyText.replace(/\s+/g, ' ').trim().slice(0, 4500);
+      },
     });
 
-    chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["content.js"]
-    }, () => {
+    const pageText = injected[0].result;
 
-        chrome.tabs.sendMessage(tab.id, { action: "GET_TEXT" }, async (response) => {
-
-            if (!response || !response.text) {
-                resultBox.textContent = "No text found.";
-                return;
-            }
-
-            resultBox.textContent = "Analyzing with AI...";
-
-            try {
-                const res = await fetch("http://localhost:5000/analyze", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        text: response.text.slice(0, 8000)
-                    })
-                });
-
-                const data = await res.json();
-
-                let output = data.response;
-
-                // 🎯 Extract score
-                let scoreMatch = output.match(/Score:\s*(\d+)\/10/);
-
-                if (scoreMatch) {
-                    let score = parseInt(scoreMatch[1]);
-
-                    let color = "green";
-                    if (score >= 7) color = "red";
-                    else if (score >= 4) color = "orange";
-
-                    resultBox.innerHTML = `
-                        <b>Risk Score:</b> <span style="color:${color}; font-size:18px">${score}/10</span>
-                        <hr/>
-                        <pre>${output}</pre>
-                    `;
-                } else {
-                    resultBox.textContent = output;
-                }
-
-            } catch (err) {
-                resultBox.textContent = "Backend not running.";
-            }
-        });
+    const response = await fetch("http://localhost:5000/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: pageText }),
     });
+
+    const data = await response.json();
+
+    if (data.success) {
+      resultDiv.innerHTML = formatAIResponse(data.result);
+    } else {
+      throw new Error(data.error);
+    }
+
+  } catch (error) {
+    console.error(error);
+    resultDiv.innerHTML = `<span style="color:#ef4444">⚠️ Error: Backend not reachable. Make sure server.js is running.</span>`;
+  } finally {
+    btn.disabled = false;
+    loader.style.display = "none";
+    btnText.innerText = "Re-Analyze";
+  }
 });
+
+// Simple helper to make the AI output look cleaner
+function formatAIResponse(text) {
+  return text
+    .replace("SUMMARY:", "<strong style='color:#3b82f6'>📋 SUMMARY</strong>")
+    .replace("RISKS:", "<br><strong style='color:#ef4444'>🚨 RISKS</strong>")
+    .replace("TRUST_SCORE:", "<br><strong style='color:#10b981'>⭐ TRUST SCORE</strong>");
+}

@@ -1,86 +1,56 @@
-
-
 const express = require("express");
-const axios = require("axios");
 const cors = require("cors");
+const axios = require("axios");
 
 const app = express();
-
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json());
 
-// Health check
-app.get("/", (req, res) => {
-    res.send("Sentinel AI Backend Running ✅");
-});
+const PORT = 5000;
+// Replace with your actual key or use process.env.GROQ_API_KEY
+const GROQ_API_KEY = "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"; 
 
 app.post("/analyze", async (req, res) => {
-    try {
-        const policyText = req.body.text;
+  try {
+    let { text } = req.body;
+    if (!text) return res.status(400).json({ error: "No text provided" });
 
-        if (!policyText || policyText.length < 50) {
-            return res.status(400).json({
-                response: "Not enough text to analyze."
-            });
-        }
+    // Clean text: remove extra whitespace to save tokens
+    const cleanedText = text.replace(/\s+/g, ' ').trim().slice(0, 4000);
 
-        console.log("📄 Policy received. Sending to Ollama...");
+    const response = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "You are Sentinel AI, a legal tech expert. Analyze privacy policies for hidden risks. Be concise and direct."
+          },
+          {
+            role: "user",
+            content: `Analyze this policy. Use this EXACT format:
+            
+            SUMMARY: (3 short bullets)
+            RISKS: (List major privacy concerns)
+            TRUST_SCORE: (X/10)
 
-        const prompt = `
-You are Sentinel AI, a privacy risk analyzer.
+            Policy text: ${cleanedText}`
+          }
+        ],
+        temperature: 0.3, // Lower temp = more consistent results
+      },
+      {
+        headers: { Authorization: `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+        timeout: 15000
+      }
+    );
 
-Analyze the privacy policy and respond STRICTLY in this format:
-
-Summary:
-- point
-- point
-- point
-
-Risks:
-- risk
-- risk
-
-Score: X/10
-
-Rules:
-- Score 0 = very safe
-- Score 10 = very risky
-- Be strict and realistic
-- No extra text
-
-Privacy Policy:
-${policyText.slice(0, 8000)}
-`;
-
-        const ollamaResponse = await axios.post(
-            "http://localhost:11434/api/generate",
-            {
-                model: "llama3",
-                prompt: prompt,
-                stream: false
-            },
-            {
-                timeout: 120000
-            }
-        );
-
-        const result =
-            ollamaResponse.data.response ||
-            "No response from model.";
-
-        console.log("✅ Summary generated");
-
-        res.json({ response: result });
-
-    } catch (error) {
-        console.error("❌ Backend Error:", error.message);
-
-        res.status(500).json({
-            response: "AI processing failed."
-        });
-    }
+    res.json({ success: true, result: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ success: false, error: "AI Analysis failed" });
+  }
 });
 
-app.listen(5000, () => {
-    console.log("🚀 Sentinel Backend running on http://localhost:5000");
-});
+app.listen(PORT, () => console.log(`🚀 Sentinel Backend: http://localhost:${PORT}`));
