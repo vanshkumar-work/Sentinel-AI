@@ -51,7 +51,8 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 // Simple helper to make the AI output look cleaner
 function formatAIResponse(text) {
   return text
+    .replace("TRUST_SCORE:", "<br><strong style='color:#10b981'>⭐ TRUST SCORE</strong>")
     .replace("SUMMARY:", "<strong style='color:#3b82f6'>📋 SUMMARY</strong>")
-    .replace("RISKS:", "<br><strong style='color:#ef4444'>🚨 RISKS</strong>")
-    .replace("TRUST_SCORE:", "<br><strong style='color:#10b981'>⭐ TRUST SCORE</strong>");
+    .replace("RISKS:", "<br><strong style='color:#ef4444'>🚨 RISKS</strong>");
+    
 }
