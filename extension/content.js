@@ -33,7 +33,7 @@ container.innerHTML = `
 document.getElementById("scanBtn").onclick = async () => {
   const text = document.body.innerText.slice(0, 4000);
 
-  const res = await fetch("http://localhost:5000/analyze", {
+  const res = await fetch("https://sentinel-backend-zr9v.onrender.com/analyze", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ text })
@@ -58,7 +58,7 @@ document.body.appendChild(container);
 
       const pageText = injected[0].result;
 
-      const response = await fetch("http://localhost:5000/analyze", {
+      const response = await fetch("https://sentinel-backend-zr9v.onrender.com/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
